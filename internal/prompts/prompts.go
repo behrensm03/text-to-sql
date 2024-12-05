@@ -7,10 +7,6 @@ import (
 	"text/template"
 )
 
-type TestPromptContext struct {
-	Food string
-}
-
 type ChatContext struct {
 	Query string
 }
@@ -18,12 +14,8 @@ type ChatContext struct {
 //go:embed templates/*
 var templates embed.FS
 
-func GetTestPrompt(data *TestPromptContext) (string, error) {
-	return executeTemplate(data, "test.tmpl")
-}
-
 func GetChatPrompt(ctx *ChatContext) (string, error) {
-	return executeTemplate(ctx, "chat.tmpl")
+	return executeTemplate(ctx, "chat-min.tmpl")
 }
 
 func executeTemplate[T any](data T, file string) (string, error) {
