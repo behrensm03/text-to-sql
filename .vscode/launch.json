@@ -8,6 +8,8 @@
       "mode": "debug",
       "program": "${workspaceFolder}/cmd/app.go", // Path to your main Go file
       "env": {},
+      "envFile": "${workspaceFolder}/.env",
+      "cwd": "${workspaceFolder}",
       "args": [],
       "showLog": true
     }

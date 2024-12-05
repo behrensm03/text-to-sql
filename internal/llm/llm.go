@@ -2,7 +2,6 @@ package llm
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -55,8 +54,17 @@ func newGemini(ctx context.Context) (*Gemini, error) {
 
 	// Specify the schema.
 	geminiModel.ResponseSchema = &genai.Schema{
-		Type:  genai.TypeArray,
-		Items: &genai.Schema{Type: genai.TypeString},
+		Type: genai.TypeObject,
+		Properties: map[string]*genai.Schema{
+			"sql": {
+				Type:        genai.TypeString,
+				Description: "The sql string you generate",
+			},
+			"error": {
+				Type:        genai.TypeBoolean,
+				Description: "True if you are unable to generate a sql query, or false otherwise.",
+			},
+		},
 	}
 
 	model := &Gemini{
@@ -103,14 +111,5 @@ func parseGeminiResponse(resp *genai.GenerateContentResponse) (string, error) {
 		return "", ErrContentTypeMismatch
 	}
 
-	var content []string
-	if err := json.Unmarshal([]byte(txt), &content); err != nil {
-		return "", fmt.Errorf("error unmarshaling gemini response: %w", err)
-	}
-
-	if len(content) == 0 {
-		return "", ErrMissingContent
-	}
-
-	return content[0], nil
+	return string(txt), nil
 }
