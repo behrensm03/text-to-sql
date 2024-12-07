@@ -3,29 +3,48 @@ package generate
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"go-test/internal/data"
 	"go-test/internal/llm"
 	"go-test/internal/prompts"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func GenerateHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) ([]map[string]interface{}, error) { // should this return a status code?
+type GenerateSqlResponse struct {
+	Status  int
+	Content []map[string]interface{}
+	Message string
+}
+
+var ErrCreatingSqlQuery = errors.New("error creating sql query")
+
+func GenerateHandler(r *http.Request) *GenerateSqlResponse {
 	model, close, err := llm.NewClient(r.Context(), llm.Gemini_1_5)
 	if err != nil {
-		return nil, err
+		return &GenerateSqlResponse{
+			Content: nil,
+			Message: "Error creating model",
+			Status:  http.StatusInternalServerError,
+		}
 	}
 	defer close()
 
 	inputQuery := r.URL.Query().Get("query")
 	if inputQuery == "" {
-		return []map[string]interface{}{{"no query": true}}, nil // TODO: figure out better error handling
+		return &GenerateSqlResponse{
+			Status:  http.StatusBadRequest,
+			Content: nil,
+			Message: "No query provided",
+		}
 	}
 
 	db, err := data.CreateDB()
 	if err != nil {
-		return nil, err
+		return &GenerateSqlResponse{
+			Content: nil,
+			Message: "Error creating database",
+			Status:  http.StatusInternalServerError,
+		}
 	}
 	defer db.Close()
 
@@ -34,7 +53,7 @@ func GenerateHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		if err != nil {
 			return "", err
 		} else if parsed.Err {
-			return "", err // TODO: fix this
+			return "", ErrCreatingSqlQuery
 		}
 		return parsed.Sql, nil
 	}
@@ -55,15 +74,28 @@ func GenerateHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 
 	resp, err := model.GenerateSequence(r.Context(), getPrompts, inputQuery)
 	if err != nil {
-		return nil, err
+		// TODO: log
+		return &GenerateSqlResponse{
+			Content: nil,
+			Status:  http.StatusInternalServerError,
+			Message: "Internal Server Error while generating SQL",
+		}
 	}
 
 	queryResult, err := selectQueryDB(db, resp)
 	if err != nil {
-		return nil, err
+		return &GenerateSqlResponse{
+			Content: nil,
+			Status:  http.StatusInternalServerError,
+			Message: "Internal Server Error while running generated SQL",
+		}
 	}
 
-	return queryResult, nil
+	return &GenerateSqlResponse{
+		Status:  http.StatusOK,
+		Message: "",
+		Content: queryResult,
+	}
 }
 
 type promptOutput struct {

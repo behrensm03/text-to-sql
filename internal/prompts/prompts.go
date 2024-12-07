@@ -15,7 +15,7 @@ type ChatContext struct {
 var templates embed.FS
 
 func GetChatPrompt(ctx *ChatContext) (string, error) {
-	return executeTemplate(ctx, "chat-min.tmpl")
+	return executeTemplate(ctx, "chat.tmpl")
 }
 
 func GetFixQueryPrompt(ctx *ChatContext) (string, error) {

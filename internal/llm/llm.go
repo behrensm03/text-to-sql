@@ -53,7 +53,7 @@ func NewClient(ctx context.Context, modelType ModelType) (Model, CloseFunc, erro
 			}
 		}, err
 	default:
-		return nil, nil, fmt.Errorf("Unrecognized model")
+		return nil, nil, fmt.Errorf("unrecognized model")
 	}
 }
 

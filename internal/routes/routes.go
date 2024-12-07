@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"fmt"
 	"go-test/internal/generate"
 	"net/http"
@@ -17,12 +18,18 @@ func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func GenerateSQL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	resp, err := generate.GenerateHandler(w, r, ps)
-	if err != nil {
-		// TODO: handle error
+	resp := generate.GenerateHandler(r)
+	if resp.Status != http.StatusOK {
+		http.Error(w, resp.Message, resp.Status)
+		return
 	}
 
-	for _, d := range resp {
-		fmt.Fprintf(w, "%v", d)
+	w.Header().Set("Content-Type", "application/json")
+	prettyJSON, err := json.MarshalIndent(resp.Content, "", "  ")
+	if err != nil {
+		http.Error(w, "Failed to generate JSON output", http.StatusInternalServerError)
+		return
 	}
+
+	w.Write(prettyJSON)
 }

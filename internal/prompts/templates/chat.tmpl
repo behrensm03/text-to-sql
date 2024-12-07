@@ -16,10 +16,9 @@ Please write a SQL query based on the following description of what the user is 
 
 You must only use the columns exactly as listed above. Any deviation from the exact column names above will result in an error.
 
-If the user asks to insert or delete entries, you should consider that an error. Only write SELECT queries.
-
 You should return your output as a single object in JSON format, with the following keys:
 - "sql": The SQL query that you have written.
 - "error": A boolean value, which should be true if you are unable to generate sql from the input query, and false otherwise.
 
 Do not offer additional explanation or provide any output other than the JSON object.
+If the user asks to insert or delete entries, you should consider that an error and set "error" to true. Only write SELECT queries.
