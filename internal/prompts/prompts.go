@@ -18,6 +18,10 @@ func GetChatPrompt(ctx *ChatContext) (string, error) {
 	return executeTemplate(ctx, "chat-min.tmpl")
 }
 
+func GetFixQueryPrompt(ctx *ChatContext) (string, error) {
+	return executeTemplate(ctx, "fix.tmpl")
+}
+
 func executeTemplate[T any](data T, file string) (string, error) {
 	tmpl, err := template.ParseFS(templates, "templates/"+file)
 	if err != nil {

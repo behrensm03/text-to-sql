@@ -16,8 +16,16 @@ var (
 	ErrContentTypeMismatch = errors.New("llm response content type mismatch")
 )
 
+type GetPromptFunction func(lastOutput string) (string, error)
+type ProcessOutputFunction func(output string) (string, error)
+type LLMStep struct {
+	GetPrompt     GetPromptFunction
+	ProcessOutput ProcessOutputFunction
+}
+
 type Model interface {
 	Generate(ctx context.Context, prompt string) (string, error)
+	GenerateSequence(ctx context.Context, steps []LLMStep, initialContext string) (string, error)
 	Close() error
 }
 
@@ -32,13 +40,20 @@ type Gemini struct {
 	model  *genai.GenerativeModel
 }
 
-func NewClient(ctx context.Context, modelType ModelType) (Model, error) {
+type CloseFunc func()
+
+func NewClient(ctx context.Context, modelType ModelType) (Model, CloseFunc, error) {
 	switch modelType {
 	case Gemini_1_5:
 		gemini, err := newGemini(ctx)
-		return gemini, err
+		return gemini, func() {
+			err := gemini.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}, err
 	default:
-		return nil, fmt.Errorf("Unrecognized model")
+		return nil, nil, fmt.Errorf("Unrecognized model")
 	}
 }
 
@@ -48,7 +63,7 @@ func newGemini(ctx context.Context) (*Gemini, error) {
 		log.Fatal(err)
 	}
 
-	geminiModel := client.GenerativeModel("gemini-1.5-pro-latest")
+	geminiModel := client.GenerativeModel("gemini-1.5-flash")
 	// Ask the model to respond with JSON.
 	geminiModel.ResponseMIMEType = "application/json"
 
@@ -87,6 +102,27 @@ func (g *Gemini) Generate(ctx context.Context, prompt string) (string, error) {
 	}
 
 	return content, nil
+}
+
+func (g *Gemini) GenerateSequence(ctx context.Context, steps []LLMStep, initialContext string) (string, error) {
+	currentOutput := initialContext
+	for _, step := range steps {
+		prompt, err := step.GetPrompt(currentOutput)
+		if err != nil {
+			return "", err
+		}
+		output, err := g.Generate(ctx, prompt)
+		if err != nil {
+			return "", err
+		}
+		parsed, err := step.ProcessOutput(output)
+		if err != nil {
+			return "", err
+		}
+		currentOutput = parsed
+	}
+
+	return currentOutput, nil
 }
 
 func (g *Gemini) Close() error {

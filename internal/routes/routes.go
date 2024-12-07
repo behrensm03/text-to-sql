@@ -19,10 +19,10 @@ func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func GenerateSQL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	resp, err := generate.GenerateHandler(w, r, ps)
 	if err != nil {
-		// handle error
+		// TODO: handle error
 	}
 
-	fmt.Fprintf(w, resp)
-
-	return
+	for _, d := range resp {
+		fmt.Fprintf(w, "%v", d)
+	}
 }
