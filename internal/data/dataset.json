@@ -2,11 +2,29 @@
     "customers": [
         {"id": 1, "name": "John Smith"},
         {"id": 2, "name": "Alice Johnson"},
-        {"id": 3, "name": "John Smith"}
+        {"id": 3, "name": "John Smith"},
+        {"id": 4, "name": "Debra O'Connor"},
+        {"id": 5, "name": "Olivia Bennett"},
+        {"id": 6, "name": "Ethan Carter"},
+        {"id": 7, "name": "Sophia Martinez"},
+        {"id": 8, "name": "Liam Robinson"}
     ],
     "orders": [
-        {"id": 1, "customer_id": 1, "date": "20241201"},
-        {"id": 2, "customer_id": 2, "date": "20230113"},
-        {"id": 3, "customer_id": 1, "date": "20240701"}
+        {"id": 1, "customer_id": 1, "product_id": 1, "date": "20241201"},
+        {"id": 2, "customer_id": 2, "product_id": 2, "date": "20230113"},
+        {"id": 3, "customer_id": 1, "product_id": 2, "date": "20240701"},
+        {"id": 4, "customer_id": 3, "product_id": 3, "date": "20230823"},
+        {"id": 5, "customer_id": 4, "product_id": 4, "date": "20210312"},
+        {"id": 6, "customer_id": 4, "product_id": 6, "date": "20240901"},
+        {"id": 7, "customer_id": 6, "product_id": 5, "date": "20240905"},
+        {"id": 8, "customer_id": 4, "product_id": 5, "date": "20221006"}
+    ],
+    "products": [
+        {"id": 1, "name": "Fender Stratocaster", "price": 1000},
+        {"id": 2, "name": "Gibson Les Paul", "price": 1200},
+        {"id": 3, "name": "Gibson Flying V", "price": 600},
+        {"id": 4, "name": "Fender Telecaster", "price": 500},
+        {"id": 5, "name": "PRS SE", "price": 700},
+        {"id": 6, "name": "1963 Fender Stratocaster", "price": 20000}
     ]
 }

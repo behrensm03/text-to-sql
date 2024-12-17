@@ -16,12 +16,20 @@ type Customer struct {
 type Order struct {
 	ID         int    `json:"id"`
 	CustomerID int    `json:"customer_id"`
+	ProductID  int    `json:"product_id"`
 	Date       string `json:"date"`
+}
+
+type Product struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
 }
 
 type Dataset struct {
 	Customers []Customer `json:"customers"`
 	Orders    []Order    `json:"orders"`
+	Products  []Product  `json:"products"`
 }
 
 //go:embed dataset.json
@@ -41,7 +49,6 @@ func CreateDB() (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// defer db.Close() // TODO: has to move
 
 	createTableQuery := `
 	CREATE TABLE IF NOT EXISTS customers (
@@ -50,8 +57,14 @@ func CreateDB() (*sql.DB, error) {
 	); CREATE TABLE IF NOT EXISTS orders (
 		id INTEGER PRIMARY KEY,
 		customer_id INTEGER,
+		product_id INTEGER,
 		order_date TEXT
-	); DELETE FROM customers; DELETE FROM orders;`
+	); CREATE TABLE IF NOT EXISTS products (
+		id INTEGER PRIMARY KEY,
+		name TEXT,
+		price INTEGER
+	);
+	DELETE FROM customers; DELETE FROM orders; DELETE FROM products;`
 	_, err = db.Exec(createTableQuery)
 	if err != nil {
 		return nil, err
@@ -70,9 +83,17 @@ func CreateDB() (*sql.DB, error) {
 		}
 	}
 
-	insertOrdersStmt := "INSERT INTO orders (id, customer_id, order_date) VALUES (?, ?, ?)"
+	insertOrdersStmt := "INSERT INTO orders (id, customer_id, product_id, order_date) VALUES (?, ?, ?, ?)"
 	for _, order := range startingDataset.Orders {
-		_, err := db.Exec(insertOrdersStmt, order.ID, order.CustomerID, order.Date)
+		_, err := db.Exec(insertOrdersStmt, order.ID, order.CustomerID, order.ProductID, order.Date)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	insertProductsStmt := "INSERT INTO products (id, name, price) VALUES (?, ?, ?)"
+	for _, product := range startingDataset.Products {
+		_, err := db.Exec(insertProductsStmt, product.ID, product.Name, product.Price)
 		if err != nil {
 			return nil, err
 		}

@@ -1,20 +1,29 @@
 Your job is to translate natural language into SQL queries.
 
 You have access to a SQL database which contains information about a business's customers and the orders that have been placed.
-Your data consists of two tables: "customers" and "orders".
+Your data consists of three tables: "customers", "products", and "orders".
 
 The "customers" table has the following columns:
 - "id": The primary key of this table, an int which is a unique identifier for each customer.
 - "name": The name of the customer
 
+The "products" table has the following columns:
+- "id": The primary key of this table, an int which is a unique identifier for each product.
+- "name": The name of the product
+- "price": An int representing the cost to purchase the product
+
 The "orders" table has the following columns:
 - "id": The primary key of this table, which is a unique int identifier for an order.
 - "customer_id": The id of the customer who placed the order. This is a foreign key that references the "id" field in the "customers" table.
+- "product_id": The id of the product that was ordered. This is a foreign key that references the "id" field in the "products" table.
 - "order_date": The date the order was placed, a string in YYYYMMDD format.
 
 Please write a SQL query based on the following description of what the user is looking for: "{{ .Query }}"
 
 You must only use the columns exactly as listed above. Any deviation from the exact column names above will result in an error.
+
+When writing queries and filtering on the "name" column in the customers table, use proper name casing despite whatever casing the raw query contains.
+For example if the query says "john smith" you should filter for "John Smith".
 
 You should return your output as a single object in JSON format, with the following keys:
 - "sql": The SQL query that you have written.
